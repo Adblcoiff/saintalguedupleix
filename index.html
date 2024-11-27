@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choix du Genre</title>
+    <style>
+        /* Style de la page principale */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: url('fond.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Georgia', serif;
+            color: #f3e9e2;
+            overflow: hidden;
+        }
+        
+        .genre-choice {
+            text-align: center;
+        }
+
+        .genre-choice h1 {
+            font-size: 5em;
+            margin: 0.2em 0;
+            color: #f3e9e2;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .genre-choice h1:hover {
+            color: #f7a7b5;
+        }
+
+        .click-area {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Contenu central pour le choix du genre -->
+    <div class="genre-choice">
+        <h1 class="click-area" onclick="choisirGenre('femme')">FEMME</h1>
+        <h1 class="click-area" onclick="choisirGenre('homme')">HOMME</h1>
+    </div>
+
+    <script>
+        function choisirGenre(genre) {
+            lancerTirage(genre);
+        }
+
+        function lancerTirage(genre) {
+            const today = new Date().toISOString().slice(0, 10); // Date actuelle (format YYYY-MM-DD)
+            const lastTirageDate = localStorage.getItem("lastTirageDate");
+            const lastTirageResult = localStorage.getItem("lastTirageResult");
+
+            let isGagnant;
+
+            // Si le tirage d'aujourd'hui n'a pas encore eu lieu, on en crée un
+            if (lastTirageDate !== today) {
+                isGagnant = Math.random() < 0.02; // 2 % de chance de gagner
+                localStorage.setItem("lastTirageDate", today);
+                localStorage.setItem("lastTirageResult", isGagnant ? "gagner" : "perdu");
+            } else {
+                // Sinon, on utilise le résultat enregistré pour aujourd'hui
+                isGagnant = lastTirageResult === "gagner";
+            }
+
+            // Lancement de la vidéo selon le résultat du tirage
+            const videoFile = isGagnant ? "gagner.mp4" : "perdu.mp4";
+            lancerVideo(videoFile);
+        }
+
+        function lancerVideo(videoFile) {
+            // Création de l'élément vidéo plein écran sans contrôle
+            const video = document.createElement("video");
+            video.src = videoFile;
+            video.autoplay = true;
+            video.muted = true;
+            video.loop = false;
+            video.playsInline = true;
+            video.style.width = "100%";
+            video.style.height = "100vh";
+            video.style.objectFit = "cover";
+            video.style.pointerEvents = "none"; // Empêche toute interaction avec la vidéo
+            video.setAttribute("playsinline", "");
+            video.setAttribute("autoplay", "true");
+            video.setAttribute("muted", "true");
+
+            // Remplacement du contenu de la page par la vidéo
+            document.body.innerHTML = "";
+            document.body.appendChild(video);
+        }
+    </script>
+
+</body>
+</html>
+
+
+
