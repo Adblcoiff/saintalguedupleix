@@ -106,7 +106,7 @@
                                 genre: genre,
                                 date: today
                             }).then(() => {
-                                alert(`Félicitations ! Vous êtes le gagnant pour ${genre} à ${lieu} aujourd'hui.`);
+                                //alert(`Félicitations ! Vous êtes le gagnant pour ${genre} à ${lieu} aujourd'hui.`);
                                 lancerVideo(genre === "femme" ? "gagnerSA.mp4" : "gagnerSA.mp4");
                                 chanceRef.set(3); // Réinitialiser la probabilité
                             }).catch(error => {
