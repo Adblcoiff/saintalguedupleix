@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Choix du Genre</title>
     <style>
-        /* Style de la page principale */
         body, html {
             margin: 0;
             padding: 0;
@@ -14,13 +13,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('fond.jpg') no-repeat center center fixed;
+            background: url('fond.png') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Georgia', serif;
             color: #f3e9e2;
             overflow: hidden;
         }
-        
+
         .genre-choice {
             text-align: center;
         }
@@ -33,6 +32,7 @@
             cursor: pointer;
             font-weight: bold;
         }
+
         .genre-choice h1:hover {
             color: #f7a7b5;
         }
@@ -50,35 +50,88 @@
         <h1 class="click-area" onclick="choisirGenre('homme')">HOMME</h1>
     </div>
 
+    <!-- Intégration de Firebase via CDN -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+
     <script>
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDNrpbJl2AJCL0f3VmOU91G2lLjTEZ0VkM",
+            authDomain: "project-8302741511644423812.firebaseapp.com",
+            databaseURL: "https://project-8302741511644423812-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "project-8302741511644423812",
+            storageBucket: "project-8302741511644423812.appspot.com",
+            messagingSenderId: "999381983248",
+            appId: "1:999381983248:web:37c70db29d0e156cdf6a95",
+            measurementId: "G-FPZ785TYD1"
+        };
+
+        // Initialisation de Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+
+        // Référence à la base de données
+        const database = firebase.database(app);
+
+        // Fonction pour choisir un genre et effectuer le tirage
         function choisirGenre(genre) {
             lancerTirage(genre);
         }
 
         function lancerTirage(genre) {
             const today = new Date().toISOString().slice(0, 10); // Date actuelle (format YYYY-MM-DD)
-            const lastTirageDate = localStorage.getItem("lastTirageDate");
-            const lastTirageResult = localStorage.getItem("lastTirageResult");
+            const gagnantRef = database.ref(`gagnants/${today}/${genre}`);
+            const chanceRef = database.ref(`chances/${today}/${genre}`);
 
-            let isGagnant;
+            // Vérifier si un gagnant a déjà été enregistré pour ce genre aujourd'hui
+            gagnantRef.get().then(snapshot => {
+                if (snapshot.exists()) {
+                    // Si un gagnant existe déjà pour ce genre, afficher "Perdu"
+                    lancerVideo("perdu.mp4");
+                } else {
+                    // Vérifier la probabilité actuelle pour ce genre
+                    chanceRef.get().then(chanceSnapshot => {
+                        let chance = 4; // Probabilité de base de 4%
+                        if (chanceSnapshot.exists()) {
+                            chance = chanceSnapshot.val(); // Récupérer la probabilité actuelle
+                        }
 
-            // Si le tirage d'aujourd'hui n'a pas encore eu lieu, on en crée un
-            if (lastTirageDate !== today) {
-                isGagnant = Math.random() < 0.5; // 50 % de chance de gagner
-                localStorage.setItem("lastTirageDate", today);
-                localStorage.setItem("lastTirageResult", isGagnant ? "gagner" : "perdu");
-            } else {
-                // Sinon, on utilise le résultat enregistré pour aujourd'hui
-                isGagnant = lastTirageResult === "gagner";
-            }
+                        const random = Math.random() * 100; // Nombre entre 0 et 100
+                        if (random <= chance) {
+                            // Gagnant : enregistrer comme gagnant pour ce genre
+                            gagnantRef.set({
+                                genre: genre,
+                                date: today
+                            }).then(() => {
+                               // alert(`Félicitations ! Vous êtes le gagnant pour ${genre} aujourd'hui.`);
+                                lancerVideo(genre === "femme" ? "gagner.mp4" : "gagner.mp4");
 
-            // Lancement de la vidéo selon le résultat du tirage
-            const videoFile = isGagnant ? "gagnerSA.mp4" : "perduSA.mp4";
-            lancerVideo(videoFile);
+                                // Réinitialiser la probabilité pour ce genre à 4 %
+                                chanceRef.set(4);
+                            }).catch(error => {
+                                console.error("Erreur d'écriture dans la base de données Firebase :", error);
+                                alert("Une erreur est survenue. Veuillez réessayer.");
+                            });
+                        } else {
+                            // Perdant : augmenter la probabilité de 4 %
+                            lancerVideo("perdu.mp4");
+                            chanceRef.set(chance + 4); // Augmenter la probabilité
+                        }
+                    }).catch(error => {
+                        console.error("Erreur lors de la lecture de la probabilité Firebase :", error);
+                        alert("Une erreur est survenue. Veuillez réessayer.");
+                    });
+                }
+            }).catch(error => {
+                console.error("Erreur lors de la lecture de la base de données Firebase :", error);
+                alert("Une erreur est survenue. Veuillez réessayer.");
+            });
         }
 
+        // Fonction pour lancer une vidéo
         function lancerVideo(videoFile) {
-            // Création de l'élément vidéo plein écran sans contrôle
+            // Création de l'élément vidéo plein écran
             const video = document.createElement("video");
             video.src = videoFile;
             video.autoplay = true;
@@ -88,12 +141,12 @@
             video.style.width = "100%";
             video.style.height = "100vh";
             video.style.objectFit = "cover";
-            video.style.pointerEvents = "none"; // Empêche toute interaction avec la vidéo
+            video.style.pointerEvents = "none"; // Empêche l'interaction
             video.setAttribute("playsinline", "");
             video.setAttribute("autoplay", "true");
             video.setAttribute("muted", "true");
 
-            // Remplacement du contenu de la page par la vidéo
+            // Remplacer le contenu de la page par la vidéo
             document.body.innerHTML = "";
             document.body.appendChild(video);
         }
