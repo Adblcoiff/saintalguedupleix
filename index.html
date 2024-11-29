@@ -13,7 +13,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('fond.png') no-repeat center center fixed;
+            background: url('fond.jpg') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Georgia', serif;
             color: #f3e9e2;
@@ -90,7 +90,7 @@
             // Vérifier si un gagnant a déjà été enregistré pour ce genre aujourd'hui
             gagnantRef.get().then(snapshot => {
                 if (snapshot.exists()) {
-                    lancerVideo("perdu.mp4");
+                    lancerVideo("perduSA.mp4");
                 } else {
                     // Vérifier la probabilité actuelle pour ce genre
                     chanceRef.get().then(chanceSnapshot => {
