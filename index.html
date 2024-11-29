@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Choix du Genre</title>
+    <title>Jeu SaintAlgue</title>
     <style>
         body, html {
             margin: 0;
@@ -74,49 +74,49 @@
         // Référence à la base de données
         const database = firebase.database(app);
 
+        // Variable fixe pour ce site
+        const lieu = "SaintAlgue"; // Spécifique à ce site
+
         // Fonction pour choisir un genre et effectuer le tirage
         function choisirGenre(genre) {
-            lancerTirage(genre);
+            lancerTirage(lieu, genre);
         }
 
-        function lancerTirage(genre) {
+        function lancerTirage(lieu, genre) {
             const today = new Date().toISOString().slice(0, 10); // Date actuelle (format YYYY-MM-DD)
-            const gagnantRef = database.ref(`gagnants/${today}/${genre}`);
-            const chanceRef = database.ref(`chances/${today}/${genre}`);
+            const gagnantRef = database.ref(`gagnants/${lieu}/${today}/${genre}`);
+            const chanceRef = database.ref(`chances/${lieu}/${today}/${genre}`);
 
             // Vérifier si un gagnant a déjà été enregistré pour ce genre aujourd'hui
             gagnantRef.get().then(snapshot => {
                 if (snapshot.exists()) {
-                    // Si un gagnant existe déjà pour ce genre, afficher "Perdu"
                     lancerVideo("perdu.mp4");
                 } else {
                     // Vérifier la probabilité actuelle pour ce genre
                     chanceRef.get().then(chanceSnapshot => {
-                        let chance = 4; // Probabilité de base de 4%
+                        let chance = 3; // Probabilité de base de 3%
                         if (chanceSnapshot.exists()) {
                             chance = chanceSnapshot.val(); // Récupérer la probabilité actuelle
                         }
 
                         const random = Math.random() * 100; // Nombre entre 0 et 100
                         if (random <= chance) {
-                            // Gagnant : enregistrer comme gagnant pour ce genre
+                            // Gagnant
                             gagnantRef.set({
                                 genre: genre,
                                 date: today
                             }).then(() => {
-                               // alert(`Félicitations ! Vous êtes le gagnant pour ${genre} aujourd'hui.`);
-                                lancerVideo(genre === "femme" ? "gagner.mp4" : "gagner.mp4");
-
-                                // Réinitialiser la probabilité pour ce genre à 4 %
-                                chanceRef.set(4);
+                                alert(`Félicitations ! Vous êtes le gagnant pour ${genre} à ${lieu} aujourd'hui.`);
+                                lancerVideo(genre === "femme" ? "gagnerSA.mp4" : "gagnerSA.mp4");
+                                chanceRef.set(3); // Réinitialiser la probabilité
                             }).catch(error => {
                                 console.error("Erreur d'écriture dans la base de données Firebase :", error);
                                 alert("Une erreur est survenue. Veuillez réessayer.");
                             });
                         } else {
-                            // Perdant : augmenter la probabilité de 4 %
-                            lancerVideo("perdu.mp4");
-                            chanceRef.set(chance + 4); // Augmenter la probabilité
+                            // Perdant
+                            lancerVideo("perduSA.mp4");
+                            chanceRef.set(chance + 3); // Augmenter la probabilité
                         }
                     }).catch(error => {
                         console.error("Erreur lors de la lecture de la probabilité Firebase :", error);
@@ -131,7 +131,6 @@
 
         // Fonction pour lancer une vidéo
         function lancerVideo(videoFile) {
-            // Création de l'élément vidéo plein écran
             const video = document.createElement("video");
             video.src = videoFile;
             video.autoplay = true;
@@ -141,12 +140,11 @@
             video.style.width = "100%";
             video.style.height = "100vh";
             video.style.objectFit = "cover";
-            video.style.pointerEvents = "none"; // Empêche l'interaction
+            video.style.pointerEvents = "none";
             video.setAttribute("playsinline", "");
             video.setAttribute("autoplay", "true");
             video.setAttribute("muted", "true");
 
-            // Remplacer le contenu de la page par la vidéo
             document.body.innerHTML = "";
             document.body.appendChild(video);
         }
