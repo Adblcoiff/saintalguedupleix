@@ -64,7 +64,7 @@
 
             // Si le tirage d'aujourd'hui n'a pas encore eu lieu, on en crée un
             if (lastTirageDate !== today) {
-                isGagnant = Math.random() < 0.04; // 4 % de chance de gagner
+                isGagnant = Math.random() < 0.5; // 50 % de chance de gagner
                 localStorage.setItem("lastTirageDate", today);
                 localStorage.setItem("lastTirageResult", isGagnant ? "gagner" : "perdu");
             } else {
