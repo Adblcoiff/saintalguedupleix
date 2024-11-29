@@ -14,7 +14,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('fond.png') no-repeat center center fixed;
+            background: url('fond.jpg') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Georgia', serif;
             color: #f3e9e2;
@@ -26,8 +26,8 @@
         }
 
         .genre-choice h1 {
-            font-size: 5em;
-            margin: 0.2em 0;
+            font-size: 4em;
+            margin: 0.1em 0;
             color: #f3e9e2;
             letter-spacing: 0.1em;
             cursor: pointer;
@@ -64,7 +64,7 @@
 
             // Si le tirage d'aujourd'hui n'a pas encore eu lieu, on en crée un
             if (lastTirageDate !== today) {
-                isGagnant = Math.random() < 0.02; // 2 % de chance de gagner
+                isGagnant = Math.random() < 0.04; // 4 % de chance de gagner
                 localStorage.setItem("lastTirageDate", today);
                 localStorage.setItem("lastTirageResult", isGagnant ? "gagner" : "perdu");
             } else {
@@ -73,7 +73,7 @@
             }
 
             // Lancement de la vidéo selon le résultat du tirage
-            const videoFile = isGagnant ? "gagner.mp4" : "perdu.mp4";
+            const videoFile = isGagnant ? "gagnerSA.mp4" : "PerduSA.mp4";
             lancerVideo(videoFile);
         }
 
@@ -101,6 +101,3 @@
 
 </body>
 </html>
-
-
-
